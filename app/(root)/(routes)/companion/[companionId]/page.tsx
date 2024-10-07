@@ -1,5 +1,6 @@
 import prisma from "@/lib/prismadb";
 import CompanionForm from "./components/companion-form";
+import { auth } from "@clerk/nextjs/server";
 
 
 interface CompanionIdPageProps {
@@ -12,7 +13,14 @@ interface CompanionIdPageProps {
 const CompanionIdPage = async ({
     params
 }: CompanionIdPageProps) => {
+    // TODO: Check Subscription
+
+    const { userId } = auth();
     const { companionId } = params;
+
+    if (!userId) {
+        return auth().redirectToSignIn();
+    }
 
     // Check if companionId is 'new'
     if (companionId === 'new') {
@@ -31,7 +39,8 @@ const CompanionIdPage = async ({
     // Fetching the existing companion for the URL
     const companion = await prisma.companion.findUnique({
         where: {
-            id: companionId,
+            id: params.companionId,
+            userId
         }
     });
 
